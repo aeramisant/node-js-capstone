@@ -7,4 +7,6 @@ const shopController = require('../controllers/index');
 router.use(bodyParser.urlencoded({ extended: true }));
 
 router.get('/', shopController.getIndex);
+router.get('/api/users', shopController.getUsers);
+router.post('/api/users', shopController.addUser);
 module.exports = router;

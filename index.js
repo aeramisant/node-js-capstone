@@ -3,7 +3,6 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-// const livereload = require('express-livereload');
 require('dotenv').config();
 
 const mongoose = require('mongoose');
@@ -16,8 +15,6 @@ app.set('views', 'views');
 app.use(bodyParser.urlencoded({ extended: true }));
 //this will serve the static files in the public folder to load styles, etc.
 app.use(express.static(path.join(__dirname, 'public')));
-// Setup livereload
-// livereload(app, (config = {}));
 
 app.use(cors());
 // app.use(express.static('public'));
@@ -26,9 +23,7 @@ app.use(cors());
 // });
 app.use(indexRoutes);
 app.use(notFound404);
-// const listener = app.listen(process.env.PORT || 3000, () => {
-//   console.log('Your app is listening on port ' + listener.address().port);
-// });
+
 mongoose
   .connect(uri)
   .then((result) => {
