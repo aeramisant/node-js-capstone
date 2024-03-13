@@ -15,7 +15,11 @@ exports.addUser = (req, res, next) => {
     .save()
     .then((result) => {
       console.log('User created', result);
-      res.redirect('/');
+      res.json({
+        _id: user._id,
+        username: user.username,
+        _v: user.__v,
+      });
     })
     .catch((error) => {
       console.log('Error creating user', error);
