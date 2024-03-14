@@ -10,19 +10,38 @@ exports.getIndex = (req, res, next) => {
 
 //You can POST to /api/users with form data username to create a new user.
 exports.addUser = (req, res, next) => {
-  const user = new User({ username: req.body.username });
-  user
-    .save()
-    .then((result) => {
-      console.log('User created', result);
-      res.json({
-        _id: user._id,
-        username: user.username,
-        _v: user.__v,
-      });
+  // Check if username is provided
+  if (!req.body.username) {
+    return res.status(400).json({ message: 'Username is required' });
+  }
+  User.findOne({ username: req.body.username })
+    .then((existingUser) => {
+      // If the user already exists, return a corresponding message
+      if (existingUser) {
+        res.json({ message: 'User already exists' });
+      } else {
+        const user = new User({
+          username: req.body.username,
+          count: 0,
+          log: [],
+        });
+        user
+          .save()
+          .then((result) => {
+            console.log('User created', result);
+            res.json({
+              _id: user._id,
+              username: user.username,
+              _v: user.__v,
+            });
+          })
+          .catch((error) => {
+            console.log('Error creating user', error);
+          });
+      }
     })
     .catch((error) => {
-      console.log('Error creating user', error);
+      console.log('Error finding user', error);
     });
 };
 
@@ -52,12 +71,33 @@ exports.getUsers = (req, res, next) => {
 
 // You can POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
 exports.addExercise = (req, res, next) => {
-  const { userId, description, duration, date } = req.body;
-  const newExercise = new Exercise({ description, duration, date });
-  //if date is empty, set it to today
-  if (!newExercise.date) {
-    newExercise.date = new Date().toISOString().substring(0, 10);
+  const userId = req.body[':_id'];
+
+  // Check if description is provided
+  if (!req.body.description) {
+    return res.status(400).json({ message: 'Description is required' });
   }
+
+  // Check if duration is provided and is a number
+  if (!req.body.duration || isNaN(req.body.duration)) {
+    return res
+      .status(400)
+      .json({ message: 'Duration is required and should be a number' });
+  }
+
+  // Check if date is provided and is a valid date
+  if (req.body.date && isNaN(Date.parse(req.body.date))) {
+    return res.status(400).json({ message: 'Invalid date format' });
+  }
+
+  let newExercise = {
+    description: req.body.description,
+    duration: parseInt(req.body.duration),
+    date:
+      req.body.date && !isNaN(Date.parse(req.body.date))
+        ? new Date(req.body.date).toDateString()
+        : new Date().toDateString(),
+  };
 
   User.findById(userId)
     .then((user) => {
@@ -88,10 +128,11 @@ exports.addExercise = (req, res, next) => {
     });
 };
 // You can make a GET request to /api/users/:_id/logs to retrieve a full exercise log of any user.
+// GET /api/users/:_id/logs?from=2016-01-01&to=2019-01-01&limit=2
 exports.getLogs = (req, res, next) => {
   const userId = req.params._id;
-  console.log(req.params);
   const { from, to, limit } = req.query;
+  let log;
 
   User.findById(userId)
     .then((user) => {
@@ -99,17 +140,28 @@ exports.getLogs = (req, res, next) => {
         return res.json({ error: 'User not found' });
       }
 
-      let log = user.log;
+      console.log(req.query);
+
+      if ((!from && !to) || (!from && !to && !limit)) {
+        log = user.log;
+      } else {
+        log = user.log.sort((a, b) => new Date(a.date) - new Date(b.date));
+      }
+      // Sort the log by date and do not forget about zero hours
 
       if (from) {
-        log = log.filter(
-          (exercise) => new Date(exercise.date) > new Date(from)
-        );
+        const fromDate = new Date(from);
+        fromDate.setHours(0, 0, 0, 0);
+        log = log.filter((exercise) => new Date(exercise.date) >= fromDate);
       }
 
       if (to) {
-        log = log.filter((exercise) => new Date(exercise.date) < new Date(to));
+        const toDate = new Date(to);
+        toDate.setHours(23, 59, 59, 999);
+        log = log.filter((exercise) => new Date(exercise.date) <= toDate);
       }
+
+      const count = log.length;
 
       if (limit) {
         log = log.slice(0, limit);
@@ -118,7 +170,7 @@ exports.getLogs = (req, res, next) => {
       res.json({
         _id: user._id,
         username: user.username,
-        count: user.count,
+        count: count,
         log: log.map((exercise) => {
           return {
             description: exercise.description,
