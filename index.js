@@ -24,10 +24,11 @@ mongoose
   .connect(uri)
   .then((result) => {
     console.log('Connected to the database');
-    app.listen(process.env.PORT || 5000, () => {
+    app.listen(process.env.PORT || 3000, () => {
       console.log(`Your app is listening on port ${process.env.PORT}`);
     });
   })
   .catch((error) => {
     console.error('Ooops, something went wrong with connection --- ', error);
   });
+module.exports = app;
