@@ -1,14 +1,21 @@
-const express = require('express');
-const router = express.Router();
-const bodyParser = require('body-parser');
+import express from 'express';
+import bodyParser from 'body-parser';
+import {
+  getIndex,
+  getUsers,
+  addUser,
+  addExercise,
+  getLogs,
+} from '../controllers/index.js';
 
-const shopController = require('../controllers/index');
+const router = express.Router();
 
 router.use(bodyParser.urlencoded({ extended: true }));
 
-router.get('/', shopController.getIndex);
-router.get('/api/users', shopController.getUsers);
-router.post('/api/users', shopController.addUser);
-router.post('/api/users/:_id/exercises', shopController.addExercise);
-router.get('/api/users/:_id/logs', shopController.getLogs);
-module.exports = router;
+router.get('/', getIndex);
+router.get('/api/users', getUsers);
+router.post('/api/users', addUser);
+router.post('/api/users/:_id/exercises', addExercise);
+router.get('/api/users/:_id/logs', getLogs);
+
+export { router as indexRoutes };

@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+
+import { error404 } from '../controllers/error.js';
 const router = express.Router();
 
-const { error404 } = require('../controllers/error');
-
 router.use(error404);
-module.exports = router;
+
+export { router as notFound404 };

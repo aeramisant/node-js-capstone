@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const Exercise = require('./exercise');
+import mongoose from 'mongoose';
+import Exercise from './exercise.js';
+
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -12,4 +13,5 @@ const userSchema = new Schema({
   },
   log: [Exercise.schema],
 });
-module.exports = mongoose.model('User', userSchema);
+
+export default mongoose.model('User', userSchema);

@@ -1,7 +1,7 @@
-const User = require('../models/user');
-const Exercise = require('../models/exercise');
+import User from '../models/user.js';
+import Exercise from '../models/exercise.js';
 
-exports.getIndex = (req, res, next) => {
+export const getIndex = (req, res, next) => {
   res.render('index', {
     pageTitle: 'Exercise Tracker | freeCodeCamp',
     path: '/',
@@ -9,7 +9,7 @@ exports.getIndex = (req, res, next) => {
 };
 
 //You can POST to /api/users with form data username to create a new user.
-exports.addUser = (req, res, next) => {
+export const addUser = (req, res, next) => {
   // Check if username is provided
   if (!req.body.username) {
     return res.status(400).json({ message: 'Username is required' });
@@ -46,7 +46,7 @@ exports.addUser = (req, res, next) => {
 };
 
 //You can make a GET request to /api/users to get a list of all users.
-exports.getUsers = (req, res, next) => {
+export const getUsers = (req, res, next) => {
   User.find()
     .then((users) => {
       if (users.length === 0) {
@@ -70,7 +70,7 @@ exports.getUsers = (req, res, next) => {
 };
 
 // You can POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
-exports.addExercise = (req, res, next) => {
+export const addExercise = (req, res, next) => {
   const userId = req.body[':_id'];
 
   // Check if description is provided
@@ -129,7 +129,7 @@ exports.addExercise = (req, res, next) => {
 };
 // You can make a GET request to /api/users/:_id/logs to retrieve a full exercise log of any user.
 // GET /api/users/:_id/logs?from=2016-01-01&to=2019-01-01&limit=2
-exports.getLogs = (req, res, next) => {
+export const getLogs = (req, res, next) => {
   const userId = req.params._id;
   const { from, to, limit } = req.query;
   let log;
